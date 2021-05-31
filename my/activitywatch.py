@@ -29,6 +29,5 @@ import activitywatch.dal as dal
 
 def windowEvents():
     _dal = dal.DAL(inputs())
-    print("WWW:", _dal.events('window'))
     yield from _dal.events('window')
 
