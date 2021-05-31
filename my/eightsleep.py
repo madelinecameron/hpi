@@ -32,7 +32,7 @@ def sessions():
     yield from _dal.sessions()
 
 
-from .core.pandas import check_dataframe, DataFrameT
+from my.core.pandas import check_dataframe, DataFrameT
 
 @check_dataframe
 def dataframe(defensive: bool=True) -> DataFrameT:
@@ -72,10 +72,3 @@ def dataframe(defensive: bool=True) -> DataFrameT:
     if 'error' not in df:
         df['error'] = None
     return df
-
-from .core import stat, Stats
-def stats() -> Stats:
-    return {
-        # todo pretty print stats?
-        **stat(dataframe),
-    }
