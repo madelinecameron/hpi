@@ -19,13 +19,10 @@ class activitywatch(user_config):
     # paths[s]/glob to the exported JSON data
     export_path: Paths
 
-
 def inputs() -> Sequence[Path]:
     return get_files(activitywatch.export_path)
 
-
 import activitywatch.dal as dal
-
 
 def windowEvents():
     _dal = dal.DAL(inputs())

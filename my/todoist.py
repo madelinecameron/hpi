@@ -31,7 +31,26 @@ def projects():
     _dal = dal.DAL(inputs())
     yield from _dal.projects()
 
-def tasks():
+def tasks(args):
     _dal = dal.DAL(inputs())
-    yield from _dal.tasks()
+    yield from _dal.tasks(id=args['id'])
 
+# TODO write up in DAL
+def completed(args):
+  _dal = dal.DAL(inputs())
+
+  since = args['since'] if 'since' in args else None
+  until = args['until'] if 'until' in args else None
+  id = args['id'] if 'id' in args else None
+
+  yield from _dal.completed(since=since, until=until, id=id)
+
+# TODO write up in DAL
+def activity(args):
+  _dal = dal.DAL(inputs())
+  yield from _dal.activity(id=args['id'])
+
+# TODO write up in DAL
+def taskComment(args):
+  _dal = dal.DAL(inputs())
+  yield from _dal.taskComment(id=args['id'])
