@@ -35,7 +35,6 @@ def tasks(args):
     _dal = dal.DAL(inputs())
     yield from _dal.tasks(id=args['id'])
 
-# TODO write up in DAL
 def completed(args):
   _dal = dal.DAL(inputs())
 
@@ -45,12 +44,10 @@ def completed(args):
 
   yield from _dal.completed(since=since, until=until, id=id)
 
-# TODO write up in DAL
 def activity(args):
   _dal = dal.DAL(inputs())
-  yield from _dal.activity(id=args['id'])
+  yield from _dal.activity(_id=args['id'])
 
-# TODO write up in DAL
 def taskComment(args):
   _dal = dal.DAL(inputs())
-  yield from _dal.taskComment(id=args['id'])
+  yield from _dal.taskComment(_id=args['id'])
