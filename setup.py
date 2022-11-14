@@ -8,16 +8,16 @@ def subpackages():
             yield p
 
 
-username = "madelinecameron"
+username = "maddie"
 if __name__ == "__main__":
     setup(
-        name=f"HPI-{username}",  # use a different name from karlicoss/HPI, for confusion regarding egg-link reasons
+        name=f"HPI-maddie",  # use a different name from karlicoss/HPI, for confusion regarding egg-link reasons
         use_scm_version={
             "local_scheme": "dirty-tag",
         },
         zip_safe=False,
         packages=list(subpackages()),
-        url=f"https://github.com/{username}/HPI",
+        url=f"https://github.com/maddie/HPI",
         author="Madeline",
         author_email="maddie@qnzl.co",
         description="A Python interface to my life",
