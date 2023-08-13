@@ -17,7 +17,7 @@ if __name__ == "__main__":
         },
         zip_safe=False,
         packages=list(subpackages()),
-        url=f"https://github.com/maddie/HPI",
+        url=f"https://github.com/madelinecameron/HPI",
         author="Madeline",
         author_email="maddie@qnzl.co",
         description="A Python interface to my life",

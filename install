@@ -1,0 +1,160 @@
+#!/usr/bin/env bash
+set -u
+
+# script to setup HPI
+# - installs karlicoss/HPI as an editable namespace package,
+# - installs this repo
+# - installs additional python packages for modules
+# - checks for any required external commands
+# - sets up directory structure in ~/data
+
+# cd to this directory
+BASE_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")" || exit $?
+readonly BASE_DIR
+cd "${BASE_DIR}" || exit 1
+
+# function to verify an external command is installed
+havecmd() {
+	local BINARY ERRMSG script_name
+	script_name='HPI'
+	# error if first argument isn't provided
+	BINARY="${1:?Must provide command to check}"
+	# the commend exists, exit with 0 (success!)
+	if command -v "${BINARY}" >/dev/null 2>&1; then
+		return 0
+	else
+		# construct error message
+		ERRMSG="'${script_name}' requires '${BINARY}', could not find that on your \$PATH"
+		if [[ -n "$2" ]]; then
+			ERRMSG="$ERRMSG. $2"
+		fi
+		printf '%s\n' "$ERRMSG" 1>&2
+		return 1
+	fi
+}
+
+clone_if_not_exists() {
+	if [[ ! -d "$2" ]]; then
+		git clone "$1" "$2" || return $?
+	fi
+}
+
+pipm() {
+	python3 -m pip "$@"
+}
+
+pip_install() {
+	pipm install --user "$@"
+}
+
+setup_fork() {
+	local FORK_ABBREV FORK_URL UPSTREAM_URL FORK_TARGET
+	echo 'Setting up upstream fork...'
+
+	# the name of my fork close to karlicoss/HPI, since HPI is this repo
+	FORK_ABBREV='HPI-fork'
+
+	UPSTREAM_URL='https://github.com/karlicoss/HPI'
+	FORK_URL="https://github.com/hpi/${FORK_ABBREV}"
+
+	FORK_TARGET="$(realpath "../${FORK_ABBREV}")"
+
+	# clone my fork one level up from here if it doesnt exist
+	if [[ ! -e "${FORK_TARGET}" ]]; then
+		git clone "${FORK_URL}" "${FORK_TARGET}"
+		cd "${FORK_TARGET}" || return $?
+		git remote add upstream "${UPSTREAM_URL}"
+	else
+		echo "Path already exists, skipping clone..."
+	fi
+	cd "${FORK_TARGET}" || return $?
+	pip_install -e '.[optional,testing]'
+
+	# cd back to here, to pip install this
+	cd "${BASE_DIR}" || return $?
+	pip_install -e '.'
+	# TODO: ensure easy-install.path is ordered right?
+}
+
+# install dependencies (with pip) for this module
+# this works by traversing the AST/looking for
+# a 'REQUIRES' global variable in the
+# corresponding file
+hpi_module() {
+	hpi module install --user "$@"
+}
+
+module_dependencies() {
+	# no my.github.gdpr because I install deps manually
+#(setup_ghexport) || return $?
+	hpi_module my.activitywatch
+	hpi_module my.airtable
+  hpi_module my.google_api
+	hpi_module my.eightsleep
+	hpi_module my.levelshealth
+	hpi_module my.lunchmoney
+	hpi_module my.rescuetime
+	hpi_module my.taskwarrior
+	hpi_module my.todoist
+	hpi_module my.trello
+	hpi_module my.typeform
+	hpi_module my.withings
+	# other requirements needed in general/not specifically for a module
+	pip_install -U -r ./requirements.txt
+}
+
+setup_data_dir() {
+	local DATA_PREFIX="${HOME}/data"
+	local -a directories
+	directories=(
+    'activitywatch'
+    'airtable'
+    'eightsleep'
+    'levelshealth'
+    'lunchmoney'
+    'rescuetime'
+    'taskwarrior'
+    'todoist'
+    'trello'
+    'typeform'
+    'withings'
+	)
+
+	echo 'Setting up directories in ~/data'
+	for dir in "${directories[@]}"; do
+		ddir="${DATA_PREFIX}/${dir}"
+		if [[ ! -d "${ddir}" ]]; then
+			mkdir -p "${ddir}"
+		fi
+	done
+}
+
+required_commands() {
+	echo 'Checking if required commands are installed...'
+	set -e
+	havecmd curl
+	havecmd git
+	havecmd bgproc "For background tasks; install from https://github.com/seanbreckenridge/bgproc"
+	havecmd evry "To handle background tasks; install from https://github.com/seanbreckenridge/evry"
+	havecmd wait-for-internet "To verify I have internet; install from https://github.com/seanbreckenridge/wait-for-internet"
+	havecmd python3
+	set +e
+}
+
+install_dependencies() {
+	# install arctee, needed for jobs
+	pip_install 'git+https://github.com/karlicoss/arctee'
+	pip_install 'git+https://github.com/seanbreckenridge/reorder_editable'
+}
+
+main() {
+	required_commands || return $?
+	wait-for-internet
+	setup_data_dir || return $?
+	install_dependencies || return $?
+	(setup_fork) || return $?
+	module_dependencies || return $?
+#verify_personal_python_packages || return $?
+}
+
+main "$@" || exit $?

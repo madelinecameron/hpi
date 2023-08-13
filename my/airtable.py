@@ -33,6 +33,6 @@ def sessions():
 
 from my.core.pandas import check_dataframe, DataFrameT
 
-def records(baseName = None, tableName = None):
+def records(args = dict()):
     _dal = dal.DAL(inputs())
-    yield from _dal.records(baseName, tableName)
+    yield from _dal.records(base_name=args.get('baseName'), table_name=args.get('tableName'))
